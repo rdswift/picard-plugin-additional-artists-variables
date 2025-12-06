@@ -4,3 +4,5 @@ This plugin provides specialized album and track variables for use in naming scr
 "Album Artist Extension" plugin, but expands the functionality to also include track artists. Note that it
 cannot be used as a direct drop-in replacement for the "Album Artist Extension" plugin because the variables
 are provided with different names.  This will require changes to existing scripts if switching to this plugin.
+
+Please see the [User Guide](https://picard-plugins-user-guides.readthedocs.io/en/latest/additional_artists_variables/user_guide.html) for more information, including usage examples.
