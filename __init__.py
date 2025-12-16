@@ -255,6 +255,540 @@ def enable(api: PluginApi):
     """Called when plugin is enabled."""
     plugin = ArtistVariablesPlugin(api)
 
+    #######################
+    #   Album Variables   #
+    #######################
+
+    api.register_script_variable(
+        name="_artists_album_primary_id",
+        documentation=api.tr(
+            "variable.artists_album_primary_id",
+            "The ID of the primary / first album artist listed."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_std",
+        documentation=api.tr(
+            "variable.artists_album_primary_std",
+            "The primary / first album artist listed (standardized)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_sort",
+        documentation=api.tr(
+            "variable.artists_album_primary_sort",
+            "The primary / first album artist listed (sort name)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_cred",
+        documentation=api.tr(
+            "variable.artists_album_primary_cred",
+            "The primary / first album artist listed (as credited)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_cred_sort",
+        documentation=api.tr(
+            "variable.artists_album_primary_cred_sort",
+            "The primary / first album artist listed (sort name as credited)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_legal",
+        documentation=api.tr(
+            "variable.artists_album_primary_legal",
+            "The primary / first album artist listed (legal name)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_sort_legal",
+        documentation=api.tr(
+            "variable.artists_album_primary_sort_legal",
+            "The primary / first album artist listed (sort legal name)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_tags",
+        documentation=api.tr(
+            "variable.artists_album_primary_tags",
+            "The primary / first album artist tags (limited to 'Maximum number of genres' setting in Picard configuration), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_id",
+        documentation=api.tr(
+            "variable.artists_album_additional_id",
+            "The IDs of all album artists listed except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_std",
+        documentation=api.tr(
+            "variable.artists_album_additional_std",
+            "All album artists listed (standardized) except for the primary / first artist, separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_cred",
+        documentation=api.tr(
+            "variable.artists_album_additional_cred",
+            "All album artists listed (as credited) except for the primary / first artist, separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_sort",
+        documentation=api.tr(
+            "variable.artists_album_additional_sort",
+            "All album artists listed (sort names) except for the primary / first artist, separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_cred_sort",
+        documentation=api.tr(
+            "variable.artists_album_additional_cred_sort",
+            "All album artists listed (sort names as credited) except for the primary / first artist, separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_legal",
+        documentation=api.tr(
+            "variable.artists_album_additional_legal",
+            "All album artists listed (legal names) except for the primary / first artist, separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_std_multi",
+        documentation=api.tr(
+            "variable.artists_album_additional_std_multi",
+            "All album artists listed (standardized) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_cred_multi",
+        documentation=api.tr(
+            "variable.artists_album_additional_cred_multi",
+            "All album artists listed (as credited) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_sort_multi",
+        documentation=api.tr(
+            "variable.artists_album_additional_sort_multi",
+            "All album artists listed (sort names) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_cred_sort_multi",
+        documentation=api.tr(
+            "variable.artists_album_additional_cred_sort_multi",
+            "All album artists listed (sort names as credited) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_legal_multi",
+        documentation=api.tr(
+            "variable.artists_album_additional_legal_multi",
+            "All album artists listed (legal names) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_std",
+        documentation=api.tr(
+            "variable.artists_album_all_std",
+            "All album artists listed (standardized), separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_sort",
+        documentation=api.tr(
+            "variable.artists_album_all_sort",
+            "All album artists listed (sort names), separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_cred",
+        documentation=api.tr(
+            "variable.artists_album_all_cred",
+            "All album artists listed (as credited), separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_cred_sort",
+        documentation=api.tr(
+            "variable.artists_album_all_cred_sort",
+            "All album artists listed (sort names as credited), separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_legal",
+        documentation=api.tr(
+            "variable.artists_album_all_legal",
+            "All album artists listed (legal names), separated by strings provided from the release entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_std_multi",
+        documentation=api.tr(
+            "variable.artists_album_all_std_multi",
+            "All album artists listed (standardized), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_sort_multi",
+        documentation=api.tr(
+            "variable.artists_album_all_sort_multi",
+            "All album artists listed (sort names), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_cred_multi",
+        documentation=api.tr(
+            "variable.artists_album_all_cred_multi",
+            "All album artists listed (as credited), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_cred_sort_multi",
+        documentation=api.tr(
+            "variable.artists_album_all_cred_sort_multi",
+            "All album artists listed (sort names as credited), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_legal_multi",
+        documentation=api.tr(
+            "variable.artists_album_all_legal_multi",
+            "All album artists listed (legal names), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_sort_primary",
+        documentation=api.tr(
+            "variable.artists_album_all_sort_primary",
+            (
+                "The primary / first album artist listed (sort name) followed by all additional album artists (standardized), "
+                "separated by strings provided from the release entry."
+            )
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_types",
+        documentation=api.tr(
+            "variable.artists_album_all_types",
+            "All album artist types, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_join_phrases",
+        documentation=api.tr(
+            "variable.artists_album_all_join_phrases",
+            "All album artist join phrases, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_count",
+        documentation=api.tr(
+            "variable.artists_album_all_count",
+            "The number of artists listed as album artists."
+        )
+    )
+
+    #######################
+    #   Track variables   #
+    #######################
+
+    api.register_script_variable(
+        name="_artists_track_primary_id",
+        documentation=api.tr(
+            "variable.artists_track_primary_id",
+            "The ID of the primary / first track artist listed."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_std",
+        documentation=api.tr(
+            "variable.artists_track_primary_std",
+            "The primary / first track artist listed (standardized)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_sort",
+        documentation=api.tr(
+            "variable.artists_track_primary_sort",
+            "The primary / first track artist listed (sort name)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_cred",
+        documentation=api.tr(
+            "variable.artists_track_primary_cred",
+            "The primary / first track artist listed (as credited)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_cred_sort",
+        documentation=api.tr(
+            "variable.artists_track_primary_cred_sort",
+            "The primary / first track artist listed (sort as credited name)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_legal",
+        documentation=api.tr(
+            "variable.artists_track_primary_legal",
+            "The primary / first track artist listed (legal name)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_sort_legal",
+        documentation=api.tr(
+            "variable.artists_track_primary_sort_legal",
+            "The primary / first track artist listed (sort legal name)."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_id",
+        documentation=api.tr(
+            "variable.artists_track_additional_id",
+            "The IDs of all track artists listed except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_std",
+        documentation=api.tr(
+            "variable.artists_track_additional_std",
+            "All track artists listed (standardized) except for the primary / first artist, separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_cred",
+        documentation=api.tr(
+            "variable.artists_track_additional_cred",
+            "All track artists listed (as credited) except for the primary / first artist, separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_sort",
+        documentation=api.tr(
+            "variable.artists_track_additional_sort",
+            "All track artists listed (sort names) except for the primary / first artist, separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_cred_sort",
+        documentation=api.tr(
+            "variable.artists_track_additional_cred_sort",
+            "All track artists listed (sort names as credited) except for the primary / first artist, separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_legal",
+        documentation=api.tr(
+            "variable.artists_track_additional_legal",
+            "All track artists listed (legal names) except for the primary / first artist, separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_std_multi",
+        documentation=api.tr(
+            "variable.artists_track_additional_std_multi",
+            "All track artists listed (standardized) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_sort_multi",
+        documentation=api.tr(
+            "variable.artists_track_additional_sort_multi",
+            "All track artists listed (sort names) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_cred_multi",
+        documentation=api.tr(
+            "variable.artists_track_additional_cred_multi",
+            "All track artists listed (as credited) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_cred_sort_multi",
+        documentation=api.tr(
+            "variable.artists_track_additional_cred_sort_multi",
+            "All track artists listed (sort names as credited) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_legal_multi",
+        documentation=api.tr(
+            "variable.artists_track_additional_legal_multi",
+            "All track artists listed (legal names) except for the primary / first artist, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_std",
+        documentation=api.tr(
+            "variable.artists_track_all_std",
+            "All track artists listed (standardized), separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_sort",
+        documentation=api.tr(
+            "variable.artists_track_all_sort",
+            "All track artists listed (sort names), separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_cred",
+        documentation=api.tr(
+            "variable.artists_track_all_cred",
+            "All track artists listed (as credited), separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_cred_sort",
+        documentation=api.tr(
+            "variable.artists_track_all_cred_sort",
+            "All track artists listed (sort names as credited), separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_legal",
+        documentation=api.tr(
+            "variable.artists_track_all_legal",
+            "All track artists listed (legal names), separated by strings provided from the track entry."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_std_multi",
+        documentation=api.tr(
+            "variable.artists_track_all_std_multi",
+            "All track artists listed (standardized), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_sort_multi",
+        documentation=api.tr(
+            "variable.artists_track_all_sort_multi",
+            "All track artists listed (sort names), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_cred_multi",
+        documentation=api.tr(
+            "variable.artists_track_all_cred_multi",
+            "All track artists listed (as credited), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_cred_sort_multi",
+        documentation=api.tr(
+            "variable.artists_track_all_cred_sort_multi",
+            "All track artists listed (sort names as credited), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_legal_multi",
+        documentation=api.tr(
+            "variable.artists_track_all_legal_multi",
+            "All track artists listed (legal names), as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_sort_primary",
+        documentation=api.tr(
+            "variable.artists_track_all_sort_primary",
+            (
+                "The primary / first track artist listed (sort name) followed by all additional track artists (standardized), "
+                "separated by strings provided from the track entry."
+            )
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_types",
+        documentation=api.tr(
+            "variable.artists_track_all_types",
+            "All track artist types, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_join_phrases",
+        documentation=api.tr(
+            "variable.artists_track_all_join_phrases",
+            "All track artist join phrases, as a multi-value."
+        )
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_count",
+        documentation=api.tr(
+            "variable.artists_track_all_count",
+            "The number of artists listed as track artists."
+        )
+    )
+
     # Register the plugin to run at a LOW priority so that other plugins that
     # modify the artist information can complete their processing and this plugin
     # is working with the latest updated data.
