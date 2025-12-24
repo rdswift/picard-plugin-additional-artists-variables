@@ -1,3 +1,6 @@
+"manifest.name" = "Additional Artists Variables"
+"manifest.description" = "This plugin provides specialized album and track variables for use in naming scripts."
+"manifest.long_description" = "This plugin provides specialized album and track variables for use in naming scripts."
 "variable.artists_album_additional_cred" = "All album artists listed (as credited) except for the primary / first artist, separated by strings provided from the release entry."
 "variable.artists_album_additional_cred_multi" = "All album artists listed (as credited) except for the primary / first artist, as a multi-value."
 "variable.artists_album_additional_cred_sort" = "All album artists listed (sort names as credited) except for the primary / first artist, separated by strings provided from the release entry."
