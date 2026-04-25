@@ -16,6 +16,7 @@ this plugin.
 """
 categories = ["metadata"]
 homepage = "https://picard-plugins-user-guides.readthedocs.io/en/latest/additional_artists_variables/user_guide.html"
+report_bugs_to = "https://github.com/rdswift/picard-plugin-additional-artists-variables/issues"
 
 
 [name_i18n]
