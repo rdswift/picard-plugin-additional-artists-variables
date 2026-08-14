@@ -6,3 +6,7 @@ cannot be used as a direct drop-in replacement for the "Album Artist Extension" 
 are provided with different names.  This will require changes to existing scripts if switching to this plugin.
 
 Please see the [User Guide](https://picard-plugins-user-guides.readthedocs.io/en/latest/additional_artists_variables/user_guide.html) for more information, including usage examples.
+
+## Contributing
+
+Please see the [Contribution Guidelines for MusicBrainz Picard Plugins](https://github.com/metabrainz/picard-plugins-registry/blob/main/PLUGIN_CONTRIBUTING.md) on how to help with development of this plugin.
