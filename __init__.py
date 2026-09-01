@@ -44,20 +44,30 @@ class ArtistVariablesPlugin:
             sort_artist = ''
             cred_sort_artist = ''
             legal_artist = ''
+            alias_artist = ''
+            alias_sort_artist = ''
             additional_std_artist = ''
             additional_cred_artist = ''
             additional_sort_artist = ''
             additional_cred_sort_artist = ''
             additional_legal_artist = ''
+            additional_alias_artist = ''
+            additional_alias_sort_artist = ''
             std_artist_list = []
             cred_artist_list = []
             sort_artist_list = []
             cred_sort_artist_list = []
             legal_artist_list = []
+            alias_artist_list = []
+            alias_artist_sort_list = []
             artist_count = 0
             artist_ids = []
             artist_types = []
             artist_join_phrases = []
+
+            locales = self.api.global_config.setting['translation_locales']
+            process_locales = bool(self.api.global_config.setting['translate_artist_names'] and locales)
+
             for artist_credit in source_metadata['artist-credit']:
                 # Initialize temporary variables for each loop.
                 temp_std_name = ''
@@ -69,6 +79,8 @@ class ArtistVariablesPlugin:
                 temp_phrase = ''
                 temp_id = ''
                 temp_type = ''
+                temp_alias_name = ''
+                temp_alias_sort = ''
                 # Check if there is a 'joinphrase' specified.
                 if 'joinphrase' in artist_credit:
                     temp_phrase = artist_credit['joinphrase']
@@ -99,6 +111,7 @@ class ArtistVariablesPlugin:
                     else:
                         self.metadata_error(album_id, 'artist-credit.artist.type', source_type)
                     if 'aliases' in artist_credit['artist']:
+                        aliases = {}
                         for item in artist_credit['artist']['aliases']:
                             if 'type-id' in item and item['type-id'] == ID_ALIASES_LEGAL_NAME:
                                 if 'ended' in item and not item['ended']:
@@ -109,6 +122,14 @@ class ArtistVariablesPlugin:
                             if 'type-id' in item and item['type-id'] == ID_ALIASES_ARTIST_NAME:
                                 if 'name' in item and 'sort-name' in item and str(item['name']).lower() == temp_cred_name.lower():
                                     temp_cred_sort_name = item['sort-name']
+                            if process_locales and 'locale' in item and item['locale']:
+                                aliases[item['locale']] = item
+                        if process_locales:
+                            for locale in locales:
+                                if locale in aliases:
+                                    temp_alias_name = aliases[locale]['name']
+                                    temp_alias_sort = aliases[locale]['sort-name']
+                                    break
                     tag_list = []
                     if self.api.global_config.setting['max_genres']:
                         for tag_type in ['user-genres', 'genres', 'user-tags', 'tags']:
@@ -135,6 +156,23 @@ class ArtistVariablesPlugin:
                     legal_artist += temp_std_name + temp_phrase
                     # Use 'n/a' for list if legal name not available
                     legal_artist_list.append('n/a',)
+                if process_locales:
+                    if temp_alias_name:
+                        alias_artist += temp_alias_name + temp_phrase
+                        alias_artist_list.append(temp_alias_name,)
+                    else:
+                        # Use standardized name for combined string if alias name not available
+                        alias_artist += temp_std_name + temp_phrase
+                        # Use 'n/a' for list if alias name not available
+                        alias_artist_list.append('n/a',)
+                    if temp_alias_sort:
+                        alias_sort_artist += temp_alias_sort + temp_phrase
+                        alias_artist_sort_list.append(temp_alias_sort,)
+                    else:
+                        # Use standardized name for combined string if alias sort name not available
+                        alias_sort_artist += temp_sort_name + temp_phrase
+                        # Use 'n/a' for list if alias name not available
+                        alias_artist_sort_list.append('n/a',)
                 if temp_std_name:
                     std_artist_list.append(temp_std_name,)
                 if temp_sort_name:
@@ -173,6 +211,12 @@ class ArtistVariablesPlugin:
                     else:
                         additional_cred_sort_artist += temp_sort_name + temp_phrase
                         sort_pri_artist_cred += temp_sort_name + temp_phrase
+                    if temp_alias_name:
+                        additional_alias_artist += temp_alias_name + temp_phrase
+                        additional_alias_sort_artist += temp_alias_sort + temp_phrase
+                    else:
+                        additional_alias_artist += temp_std_name + temp_phrase
+                        additional_alias_sort_artist += temp_sort_name + temp_phrase
                 artist_count += 1
         else:
             # No valid metadata found.  Log as error.
@@ -234,6 +278,19 @@ class ArtistVariablesPlugin:
             destination_metadata['~artists_{0}_all_join_phrases'.format(source_type,)] = artist_join_phrases
         if artist_count:
             destination_metadata['~artists_{0}_all_count'.format(source_type,)] = artist_count
+        if process_locales and alias_artist_list:
+            destination_metadata['~artists_{0}_all_alias'.format(source_type,)] = alias_artist
+            destination_metadata['~artists_{0}_all_alias_multi'.format(source_type,)] = alias_artist_list
+            destination_metadata['~artists_{0}_all_alias_sort'.format(source_type,)] = alias_sort_artist
+            destination_metadata['~artists_{0}_all_alias_sort_multi'.format(source_type,)] = alias_artist_sort_list
+            destination_metadata['~artists_{0}_primary_alias'.format(source_type,)] = alias_artist_list[0]
+            destination_metadata['~artists_{0}_primary_alias_sort'.format(source_type,)] = alias_artist_sort_list[0]
+            if len(alias_artist_list) > 1:
+                destination_metadata['~artists_{0}_additional_alias'.format(source_type,)] = additional_alias_artist
+                destination_metadata['~artists_{0}_additional_alias_sort'.format(source_type,)] = additional_alias_sort_artist
+                destination_metadata['~artists_{0}_additional_alias_multi'.format(source_type,)] = alias_artist_list[1:]
+            if len(alias_artist_sort_list) > 1:
+                destination_metadata['~artists_{0}_additional_alias_sort_multi'.format(source_type,)] = alias_artist_sort_list[1:]
 
     def metadata_error(self, album_id, metadata_element, metadata_group):
         self.api.logger.error("{0}: {1!r}: Missing '{2}' in {3} metadata.".format(
@@ -257,11 +314,101 @@ def enable(api: PluginApi):
     #######################
 
     api.register_script_variable(
+        name="_artists_album_additional_alias",
+        documentation=api.tr(
+            "variable.artists_album_additional_alias",
+            (
+                "All album artists listed (as locale alias) except for the primary / first artist, "
+                "separated by strings provided from the release entry."
+            )
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_alias_multi",
+        documentation=api.tr(
+            "variable.artists_album_additional_alias_multi",
+            "All album artists listed (as locale alias) except for the primary / first artist, as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_alias_sort",
+        documentation=api.tr(
+            "variable.artists_album_additional_alias_sort",
+            (
+                "All album artists listed (sort names as locale alias) except for the primary / first artist, "
+                "separated by strings provided from the release entry."
+            )
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_album_additional_alias_sort_multi",
+        documentation=api.tr(
+            "variable.artists_album_additional_alias_sort_multi",
+            "All album artists listed (sort names as locale alias) except for the primary / first artist, as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_alias",
+        documentation=api.tr(
+            "variable.artists_album_all_alias",
+            "All album artists listed (as locale alias), separated by strings provided from the release entry."
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_alias_multi",
+        documentation=api.tr(
+            "variable.artists_album_all_alias_multi",
+            "All album artists listed (as locale alias), as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_alias_sort",
+        documentation=api.tr(
+            "variable.artists_album_all_alias_sort",
+            "All album artists listed (sort names as locale alias), separated by strings provided from the release entry."
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_album_all_alias_sort_multi",
+        documentation=api.tr(
+            "variable.artists_album_all_alias_sort_multi",
+            "All album artists listed (sort names as locale alias), as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_alias",
+        documentation=api.tr(
+            "variable.artists_album_primary_alias",
+            "The primary / first album artist listed (locale alias name)."
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_album_primary_alias_sort",
+        documentation=api.tr(
+            "variable.artists_album_primary_alias_sort",
+            "The primary / first album artist listed (sort locale alias name)."
+        ),
+    )
+
+    api.register_script_variable(
         name="_artists_album_primary_id",
         documentation=api.tr(
             "variable.artists_album_primary_id",
             "The ID of the primary / first album artist listed."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -269,7 +416,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_primary_std",
             "The primary / first album artist listed (standardized)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -277,7 +424,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_primary_sort",
             "The primary / first album artist listed (sort name)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -285,7 +432,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_primary_cred",
             "The primary / first album artist listed (as credited)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -293,7 +440,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_primary_cred_sort",
             "The primary / first album artist listed (sort name as credited)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -301,7 +448,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_primary_legal",
             "The primary / first album artist listed (legal name)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -309,7 +456,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_primary_sort_legal",
             "The primary / first album artist listed (sort legal name)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -317,7 +464,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_primary_tags",
             "The primary / first album artist tags (limited to 'Maximum number of genres' setting in Picard configuration), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -325,7 +473,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_id",
             "The IDs of all album artists listed except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -333,7 +482,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_std",
             "All album artists listed (standardized) except for the primary / first artist, separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -341,7 +490,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_cred",
             "All album artists listed (as credited) except for the primary / first artist, separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -349,7 +498,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_sort",
             "All album artists listed (sort names) except for the primary / first artist, separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -357,7 +506,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_cred_sort",
             "All album artists listed (sort names as credited) except for the primary / first artist, separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -365,7 +514,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_legal",
             "All album artists listed (legal names) except for the primary / first artist, separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -373,7 +522,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_std_multi",
             "All album artists listed (standardized) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -381,7 +531,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_cred_multi",
             "All album artists listed (as credited) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -389,7 +540,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_sort_multi",
             "All album artists listed (sort names) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -397,7 +549,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_cred_sort_multi",
             "All album artists listed (sort names as credited) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -405,7 +558,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_additional_legal_multi",
             "All album artists listed (legal names) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -413,7 +567,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_std",
             "All album artists listed (standardized), separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -421,7 +575,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_sort",
             "All album artists listed (sort names), separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -429,7 +583,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_cred",
             "All album artists listed (as credited), separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -437,7 +591,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_cred_sort",
             "All album artists listed (sort names as credited), separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -445,7 +599,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_legal",
             "All album artists listed (legal names), separated by strings provided from the release entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -453,7 +607,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_std_multi",
             "All album artists listed (standardized), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -461,7 +616,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_sort_multi",
             "All album artists listed (sort names), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -469,7 +625,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_cred_multi",
             "All album artists listed (as credited), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -477,7 +634,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_cred_sort_multi",
             "All album artists listed (sort names as credited), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -485,7 +643,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_legal_multi",
             "All album artists listed (legal names), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -496,7 +655,7 @@ def enable(api: PluginApi):
                 "The primary / first album artist listed (sort name) followed by all additional album artists (standardized), "
                 "separated by strings provided from the release entry."
             )
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -504,7 +663,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_types",
             "All album artist types, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -512,7 +672,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_join_phrases",
             "All album artist join phrases, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -520,7 +681,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_album_all_count",
             "The number of artists listed as album artists."
-        )
+        ),
     )
 
     #######################
@@ -528,11 +689,101 @@ def enable(api: PluginApi):
     #######################
 
     api.register_script_variable(
+        name="_artists_track_additional_alias",
+        documentation=api.tr(
+            "variable.artists_track_additional_alias",
+            (
+                "All track artists listed (as locale alias) except for the primary / first artist, "
+                "separated by strings provided from the release entry."
+            )
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_alias_multi",
+        documentation=api.tr(
+            "variable.artists_track_additional_alias_multi",
+            "All track artists listed (as locale alias) except for the primary / first artist, as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_alias_sort",
+        documentation=api.tr(
+            "variable.artists_track_additional_alias_sort",
+            (
+                "All track artists listed (sort names as locale alias) except for the primary / first artist, "
+                "separated by strings provided from the release entry."
+            )
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_track_additional_alias_sort_multi",
+        documentation=api.tr(
+            "variable.artists_track_additional_alias_sort_multi",
+            "All track artists listed (sort names as locale alias) except for the primary / first artist, as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_alias",
+        documentation=api.tr(
+            "variable.artists_track_all_alias",
+            "All track artists listed (as locale alias), separated by strings provided from the release entry."
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_alias_multi",
+        documentation=api.tr(
+            "variable.artists_track_all_alias_multi",
+            "All track artists listed (as locale alias), as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_alias_sort",
+        documentation=api.tr(
+            "variable.artists_track_all_alias_sort",
+            "All track artists listed (sort names as locale alias), separated by strings provided from the release entry."
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_track_all_alias_sort_multi",
+        documentation=api.tr(
+            "variable.artists_track_all_alias_sort_multi",
+            "All track artists listed (sort names as locale alias), as a multi-value."
+        ),
+        is_multi_value=True,
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_alias",
+        documentation=api.tr(
+            "variable.artists_track_primary_alias",
+            "The primary / first track artist listed (locale alias name)."
+        ),
+    )
+
+    api.register_script_variable(
+        name="_artists_track_primary_alias_sort",
+        documentation=api.tr(
+            "variable.artists_track_primary_alias_sort",
+            "The primary / first track artist listed (sort locale alias name)."
+        ),
+    )
+
+    api.register_script_variable(
         name="_artists_track_primary_id",
         documentation=api.tr(
             "variable.artists_track_primary_id",
             "The ID of the primary / first track artist listed."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -540,7 +791,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_primary_std",
             "The primary / first track artist listed (standardized)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -548,7 +799,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_primary_sort",
             "The primary / first track artist listed (sort name)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -556,7 +807,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_primary_cred",
             "The primary / first track artist listed (as credited)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -564,7 +815,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_primary_cred_sort",
             "The primary / first track artist listed (sort as credited name)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -572,7 +823,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_primary_legal",
             "The primary / first track artist listed (legal name)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -580,7 +831,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_primary_sort_legal",
             "The primary / first track artist listed (sort legal name)."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -588,7 +839,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_id",
             "The IDs of all track artists listed except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -596,7 +848,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_std",
             "All track artists listed (standardized) except for the primary / first artist, separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -604,7 +856,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_cred",
             "All track artists listed (as credited) except for the primary / first artist, separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -612,7 +864,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_sort",
             "All track artists listed (sort names) except for the primary / first artist, separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -620,7 +872,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_cred_sort",
             "All track artists listed (sort names as credited) except for the primary / first artist, separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -628,7 +880,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_legal",
             "All track artists listed (legal names) except for the primary / first artist, separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -636,7 +888,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_std_multi",
             "All track artists listed (standardized) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -644,7 +897,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_sort_multi",
             "All track artists listed (sort names) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -652,7 +906,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_cred_multi",
             "All track artists listed (as credited) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -660,7 +915,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_cred_sort_multi",
             "All track artists listed (sort names as credited) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -668,7 +924,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_additional_legal_multi",
             "All track artists listed (legal names) except for the primary / first artist, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -676,7 +933,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_std",
             "All track artists listed (standardized), separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -684,7 +941,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_sort",
             "All track artists listed (sort names), separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -692,7 +949,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_cred",
             "All track artists listed (as credited), separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -700,7 +957,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_cred_sort",
             "All track artists listed (sort names as credited), separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -708,7 +965,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_legal",
             "All track artists listed (legal names), separated by strings provided from the track entry."
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -716,7 +973,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_std_multi",
             "All track artists listed (standardized), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -724,7 +982,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_sort_multi",
             "All track artists listed (sort names), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -732,7 +991,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_cred_multi",
             "All track artists listed (as credited), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -740,7 +1000,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_cred_sort_multi",
             "All track artists listed (sort names as credited), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -748,7 +1009,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_legal_multi",
             "All track artists listed (legal names), as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -759,7 +1021,7 @@ def enable(api: PluginApi):
                 "The primary / first track artist listed (sort name) followed by all additional track artists (standardized), "
                 "separated by strings provided from the track entry."
             )
-        )
+        ),
     )
 
     api.register_script_variable(
@@ -767,7 +1029,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_types",
             "All track artist types, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -775,7 +1038,8 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_join_phrases",
             "All track artist join phrases, as a multi-value."
-        )
+        ),
+        is_multi_value=True,
     )
 
     api.register_script_variable(
@@ -783,7 +1047,7 @@ def enable(api: PluginApi):
         documentation=api.tr(
             "variable.artists_track_all_count",
             "The number of artists listed as track artists."
-        )
+        ),
     )
 
     # Register the plugin to run at a LOW priority so that other plugins that
