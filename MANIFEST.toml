@@ -5,15 +5,7 @@ description = "This plugin provides specialized album and track variables for us
 api = ['3.0']
 license = "GPL-2.0-or-later"
 license_url = "https://www.gnu.org/licenses/gpl-2.0.html"
-long_description = """
-This plugin provides specialized album and track variables for use in
-naming scripts. It is based on the "Album Artist Extension" plugin, but
-expands the functionality to also include track artists. Note that it
-cannot be used as a direct drop-in replacement for the "Album Artist
-Extension" plugin because the variables are provided with different
-names.  This will require changes to existing scripts if switching to
-this plugin.
-"""
+long_description = "This plugin provides specialized album and track variables for use in naming scripts."
 categories = ["metadata"]
 homepage = "https://picard-plugins-user-guides.readthedocs.io/en/latest/additional_artists_variables/user_guide.html"
 report_bugs_to = "https://github.com/rdswift/picard-plugin-additional-artists-variables/issues"
@@ -22,10 +14,12 @@ report_bugs_to = "https://github.com/rdswift/picard-plugin-additional-artists-va
 [name_i18n]
 de = "Zusätzliche Künstlervariablen"
 fr = "Variables supplémentaires relatives aux artistes"
+zh_CN = "附加艺术家变量"
 
 [description_i18n]
 de = "Dieses Plugin stellt spezielle Album- und Titelvariablen für die Verwendung in Benennungsskripten bereit."
-fr = "Ce plugin fournit des variables spécialisées pour les albums et les pistes à utiliser dans les scripts de nommage."
+fr = "Ce plugin fournit des variables spécifiques aux albums et aux pistes, destinées à être utilisées dans les scripts de nommage."
+zh_CN = "此插件为文件命名脚本提供专门的专辑和音轨变量。"
 
 [long_description_i18n]
 de = """
@@ -35,9 +29,5 @@ direkter Ersatz für das Plugin „Album Artist Extension“ verwendet werden ka
 bereitgestellt werden.  Bei einem Wechsel zu diesem Plugin müssen daher Änderungen an bestehenden Skripten vorgenommen werden.
 """
 
-fr = """
-Ce plugin fournit des variables spécialisées pour les albums et les pistes à utiliser dans les scripts de nommage. Il est
-basé sur le plugin « Album Artist Extension », mais étend ses fonctionnalités pour inclure également les artistes des pistes.
-Notez qu'il ne peut pas être utilisé comme remplacement direct du plugin « Album Artist Extension » car les variables sont
-fournies avec des noms différents.  Cela nécessitera des modifications des scripts existants si vous passez à ce plugin.
-"""
+fr = "Ce plugin fournit des variables spécifiques aux albums et aux pistes, destinées à être utilisées dans les scripts de nommage."
+zh_CN = "此插件为文件命名脚本提供专门的专辑和音轨变量。"
