@@ -1,6 +1,16 @@
 "manifest.description" = "This plugin provides specialized album and track variables for use in naming scripts."
 "manifest.long_description" = "This plugin provides specialized album and track variables for use in naming scripts."
 "manifest.name" = "Additional Artists Variables"
+
+"qt.AdditionalArtistsVariablesOptionsPage.page.text" = "These settings will determine the text to use for missing artist information in the `*_legal_multi`, `*_alias_multi` and `*_alias_sort_multi` multi-value variables. You can use either the standarized name as the replacement, or specify the text to use. The default text is \"n/a\", but can be changed to a different value (including an empty string) as required."
+"qt.AdditionalArtistsVariablesOptionsPage.page.title" = "Additional Artists Variables"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_special_name.title" = "Use defined text"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_standard_name.title" = "Use standardized name"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_standard_sort_name.title" = "Use standardized sort name"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_alias_name.title" = "Locale Alias Name"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_alias_sort_name.title" = "Locale Alias Sort Name"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_legal_name.title" = "Legal Name"
+
 "variable.artists_album_additional_alias" = "All album artists listed (locale-specific alias names) except for the primary / first artist, separated by strings provided from the release entry."
 "variable.artists_album_additional_alias_multi" = "All album artists listed (locale-specific alias names) except for the primary / first artist, as a multi-value."
 "variable.artists_album_additional_alias_sort" = "All album artists listed (locale-specific alias sort names) except for the primary / first artist, separated by strings provided from the release entry."

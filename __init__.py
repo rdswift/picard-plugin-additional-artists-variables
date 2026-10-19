@@ -18,7 +18,16 @@
 
 from operator import itemgetter
 
-from picard.plugin3.api import PluginApi
+from picard.plugin3.api import (
+    Album,
+    Metadata,
+    OptionsPage,
+    PluginApi,
+    Track,
+    t_,
+)
+
+from .ui_options_additional_artists_variables import Ui_AdditionalArtistsVariablesOptionsPage
 
 
 ID_ALIASES_ARTIST_NAME = '894afba6-2816-3c24-8072-eadb66bd04bc'
@@ -26,12 +35,16 @@ ID_ALIASES_LEGAL_NAME = 'd4dcd0c0-b341-3612-a332-c0ce797b25cf'
 
 LOG_PREFIX = 'Additional Artists Variables'
 
+USER_GUIDE_URL = (
+    'https://picard-plugins-user-guides.readthedocs.io/en/latest/additional_artists_variables/user_guide.html'
+)
+
 
 class ArtistVariablesPlugin:
     def __init__(self, api: PluginApi):
         self.api = api
 
-    def process_artists(self, album_id, source_metadata, destination_metadata, source_type):
+    def process_artists(self, album_id: str, source_metadata: dict, destination_metadata: Metadata, source_type: str):
         # Test for valid metadata node.
         # The 'artist-credit' key should always be there.
         # This check is to avoid a runtime error if it doesn't exist for some reason.
@@ -296,18 +309,84 @@ class ArtistVariablesPlugin:
         self.api.logger.error("{0}: {1!r}: Missing '{2}' in {3} metadata.".format(
             LOG_PREFIX, album_id, metadata_element, metadata_group,))
 
-    def make_album_vars(self, api, album, album_metadata, release_metadata):
-        album_id = release_metadata['id'] if release_metadata else 'No Album ID'
-        self.process_artists(album_id, release_metadata, album_metadata, 'album')
+    def make_album_vars(self, api: PluginApi, album: Album, metadata: Metadata, release_node: dict):
+        album_id = release_node['id'] if release_node else 'No Album ID'
+        self.process_artists(album_id, release_node, metadata, 'album')
 
-    def make_track_vars(self, api, album, album_metadata, track_metadata, release_metadata):
-        album_id = release_metadata['id'] if release_metadata else 'No Album ID'
-        self.process_artists(album_id, track_metadata, album_metadata, 'track')
+    def make_track_vars(self, api: PluginApi, track: Track, metadata: Metadata, track_node: dict, release_node: dict):
+        album_id = release_node['id'] if release_node else 'No Album ID'
+        self.process_artists(album_id, track_node, metadata, 'track')
+
+
+class AdditionalArtistsVariablesOptionsPage(OptionsPage):
+    """Options page for the Additional Artists Details plugin."""
+
+    TITLE = t_("manifest.name", "Additional Artists Variables")
+    HELP_URL = USER_GUIDE_URL
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
+        self.ui = Ui_AdditionalArtistsVariablesOptionsPage()
+        self.ui.setupUi(self)
+
+        self.ui.rb_legal_special.toggled.connect(self.set_line_edit_states)
+        self.ui.rb_alias_special.toggled.connect(self.set_line_edit_states)
+        self.ui.rb_alias_sort_special.toggled.connect(self.set_line_edit_states)
+
+    def load(self) -> None:
+        """Load the option settings."""
+
+        if self.api.plugin_config['missing_legal_option'] == 1:
+            self.ui.rb_legal_special.setChecked(True)
+        else:
+            self.ui.rb_legal_standard.setChecked(True)
+        self.ui.legal_special_text.setText(self.api.plugin_config['missing_legal_text'])
+
+        if self.api.plugin_config['missing_alias_option'] == 1:
+            self.ui.rb_alias_special.setChecked(True)
+        else:
+            self.ui.rb_alias_standard.setChecked(True)
+        self.ui.alias_special_text.setText(self.api.plugin_config['missing_alias_text'])
+
+        if self.api.plugin_config['missing_alias_sort_option'] == 1:
+            self.ui.rb_alias_sort_special.setChecked(True)
+        else:
+            self.ui.rb_alias_sort_standard.setChecked(True)
+        self.ui.alias_sort_special_text.setText(self.api.plugin_config['missing_alias_sort_text'])
+
+        self.set_line_edit_states()
+
+    def save(self) -> None:
+        """Save the option settings."""
+
+        self.api.plugin_config['missing_legal_option'] = 1 if self.ui.rb_legal_special.isChecked() else 0
+        self.api.plugin_config['missing_legal_text'] = self.ui.legal_special_text.text()
+
+        self.api.plugin_config['missing_alias_option'] = 1 if self.ui.rb_alias_special.isChecked() else 0
+        self.api.plugin_config['missing_alias_text'] = self.ui.alias_special_text.text()
+
+        self.api.plugin_config['missing_alias_sort_option'] = 1 if self.ui.rb_alias_sort_special.isChecked() else 0
+        self.api.plugin_config['missing_alias_sort_text'] = self.ui.alias_sort_special_text.text()
+
+    def set_line_edit_states(self):
+        self.ui.legal_special_text.setEnabled(self.ui.rb_legal_special.isChecked())
+        self.ui.alias_special_text.setEnabled(self.ui.rb_alias_special.isChecked())
+        self.ui.alias_sort_special_text.setEnabled(self.ui.rb_alias_sort_special.isChecked())
 
 
 def enable(api: PluginApi):
     """Called when plugin is enabled."""
     plugin = ArtistVariablesPlugin(api)
+
+    api.plugin_config.register_option('missing_legal_option', 1)
+    api.plugin_config.register_option('missing_legal_text', 'n/a')
+    api.plugin_config.register_option('missing_alias_option', 1)
+    api.plugin_config.register_option('missing_alias_text', 'n/a')
+    api.plugin_config.register_option('missing_alias_sort_option', 1)
+    api.plugin_config.register_option('missing_alias_sort_text', 'n/a')
+
+    api.register_options_page(AdditionalArtistsVariablesOptionsPage)
 
     #######################
     #   Album Variables   #

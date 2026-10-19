@@ -1,6 +1,16 @@
 "manifest.description" = "Ce plugin fournit des variables spécifiques aux albums et aux pistes, destinées à être utilisées dans les scripts de nommage."
 "manifest.long_description" = "Ce plugin fournit des variables spécifiques aux albums et aux pistes, destinées à être utilisées dans les scripts de nommage."
 "manifest.name" = "Variables supplémentaires relatives aux artistes"
+
+"qt.AdditionalArtistsVariablesOptionsPage.page.text" = "Ces paramètres déterminent le texte à utiliser lorsque des informations sur l'artiste sont manquantes dans les variables à valeurs multiples `*_legal_multi`, `*_alias_multi` et `*_alias_sort_multi`. Vous pouvez soit utiliser le nom normalisé comme remplacement, soit spécifier le texte à utiliser. Le texte par défaut est « n/a », mais il peut être remplacé par une autre valeur (y compris une chaîne vide) selon vos besoins."
+"qt.AdditionalArtistsVariablesOptionsPage.page.title" = "Variables supplémentaires relatives aux artistes"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_special_name.title" = "Utiliser le texte défini"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_standard_name.title" = "Utiliser le nom normalisé"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_standard_sort_name.title" = "Utiliser le nom de tri normalisé"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_alias_name.title" = "Nom d'alias de paramètres régionaux"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_alias_sort_name.title" = "Nom de tri de l'alias de paramètres régionaux"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_legal_name.title" = "Nom légal"
+
 "variable.artists_album_additional_alias" = "Tous les artistes figurant sur l'album (noms d'alias spécifiques à la locale), à l'exception de l'artiste principal / premier artiste, séparés par les chaînes de caractères fournies dans la fiche de l'album."
 "variable.artists_album_additional_alias_multi" = "Tous les artistes de l'album répertoriés (noms d'alias spécifiques à la locale), à l'exception de l'artiste principal / premier artiste, sous forme de liste à plusieurs valeurs."
 "variable.artists_album_additional_alias_sort" = "Tous les artistes de l'album répertoriés (noms de tri des alias spécifiques à la locale), à l'exception de l'artiste principal / premier artiste, séparés par les chaînes de caractères fournies dans la fiche de l'album."
