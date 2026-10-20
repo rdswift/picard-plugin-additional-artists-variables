@@ -41,8 +41,25 @@ USER_GUIDE_URL = (
 
 
 class ArtistVariablesPlugin:
+    """Artists Variables Setting Class"""
     def __init__(self, api: PluginApi):
         self.api = api
+        self.use_standard_legal_name = False
+        self.use_standard_alias_name = False
+        self.use_standard_alias_sort = False
+        self.legal_name_text = 'n/a'
+        self.alias_name_text = 'n/a'
+        self.alias_sort_text = 'n/a'
+
+    def set_replacements(self):
+        self.use_standard_legal_name = bool(self.api.plugin_config['missing_legal_option'] == 0)
+        self.legal_name_text = self.api.plugin_config['missing_legal_text']
+
+        self.use_standard_alias_name = bool(self.api.plugin_config['missing_alias_option'] == 0)
+        self.alias_name_text = self.api.plugin_config['missing_alias_text']
+
+        self.use_standard_alias_sort = bool(self.api.plugin_config['missing_alias_sort_option'] == 0)
+        self.alias_sort_text = self.api.plugin_config['missing_alias_sort_text']
 
     def process_artists(self, album_id: str, source_metadata: dict, destination_metadata: Metadata, source_type: str):
         # Test for valid metadata node.
@@ -167,8 +184,8 @@ class ArtistVariablesPlugin:
                 else:
                     # Use standardized name for combined string if legal name not available
                     legal_artist += temp_std_name + temp_phrase
-                    # Use 'n/a' for list if legal name not available
-                    legal_artist_list.append('n/a',)
+                    na = temp_std_name if self.use_standard_legal_name else self.legal_name_text
+                    legal_artist_list.append(na,)
                 if process_locales:
                     if temp_alias_name:
                         alias_artist += temp_alias_name + temp_phrase
@@ -176,16 +193,16 @@ class ArtistVariablesPlugin:
                     else:
                         # Use standardized name for combined string if alias name not available
                         alias_artist += temp_std_name + temp_phrase
-                        # Use 'n/a' for list if alias name not available
-                        alias_artist_list.append('n/a',)
+                        na = temp_std_name if self.use_standard_alias_name else self.alias_name_text
+                        alias_artist_list.append(na,)
                     if temp_alias_sort:
                         alias_sort_artist += temp_alias_sort + temp_phrase
                         alias_artist_sort_list.append(temp_alias_sort,)
                     else:
                         # Use standardized name for combined string if alias sort name not available
                         alias_sort_artist += temp_sort_name + temp_phrase
-                        # Use 'n/a' for list if alias name not available
-                        alias_artist_sort_list.append('n/a',)
+                        na = temp_sort_name if self.use_standard_alias_sort else self.alias_sort_text
+                        alias_artist_sort_list.append(na,)
                 if temp_std_name:
                     std_artist_list.append(temp_std_name,)
                 if temp_sort_name:
@@ -310,10 +327,12 @@ class ArtistVariablesPlugin:
             LOG_PREFIX, album_id, metadata_element, metadata_group,))
 
     def make_album_vars(self, api: PluginApi, album: Album, metadata: Metadata, release_node: dict):
+        self.set_replacements()
         album_id = release_node['id'] if release_node else 'No Album ID'
         self.process_artists(album_id, release_node, metadata, 'album')
 
     def make_track_vars(self, api: PluginApi, track: Track, metadata: Metadata, track_node: dict, release_node: dict):
+        self.set_replacements()
         album_id = release_node['id'] if release_node else 'No Album ID'
         self.process_artists(album_id, track_node, metadata, 'track')
 
