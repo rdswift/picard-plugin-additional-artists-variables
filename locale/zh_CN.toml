@@ -86,4 +86,12 @@
 "variable.artists_track_primary_sort" = "列出的主要/第一个音轨艺术家（按排序名称）。"
 "variable.artists_track_primary_sort_legal" = "列出的主要/第一个音轨艺术家（按法定名称排序）。"
 "variable.artists_track_primary_std" = "列出的主要/第一个音轨艺术家（标准化）。"
+"qt.AdditionalArtistsVariablesOptionsPage.page.text" = "这些设置将决定在 *_legal_multi、*_alias_multi 和 *_alias_sort_multi 多值变量中，缺失艺术家信息时使用的文本。你可以使用标准化名称作为替代，或指定要使用的文本。默认文本为 \"n/a\"，但可以根据需要更改为不同的值（包括空字符串）。"
+"qt.AdditionalArtistsVariablesOptionsPage.page.title" = "附加艺术家变量"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_special_name.title" = "使用已定义的文本"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_standard_name.title" = "使用规范名称"
+"qt.AdditionalArtistsVariablesOptionsPage.rb.use_standard_sort_name.title" = "使用标准化排序名"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_alias_name.title" = "语言区域别名"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_alias_sort_name.title" = "语言区域别名排序名"
+"qt.AdditionalArtistsVariablesOptionsPage.section.missing_legal_name.title" = "法定名称"
 
